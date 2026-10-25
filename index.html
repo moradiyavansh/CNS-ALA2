@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Malware Spread Lab</title>
+<style>
+:root{--bg:#100f24;--panel:#1b1a3a;--line:#38366e;--ink:#ecebff;--mute:#aaa8d8;--ok:#4fd1a5;--bad:#ff5c5c;--acc:#ffb703;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f1effb;--panel:#fff;--line:#c9c5ec;--ink:#1b1840;--mute:#5a5791;--ok:#0c8f6a;--bad:#d7263d;--acc:#b36b00}}
+:root[data-theme="dark"]{--bg:#100f24;--panel:#1b1a3a;--line:#38366e;--ink:#ecebff;--mute:#aaa8d8}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.55;min-height:100vh;display:flex;flex-direction:column}
+main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:20px 16px 32px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 .4em;line-height:1.2}
+h1{font-size:clamp(1.9rem,6vw,3.2rem)}
+.sub{color:var(--mute);max-width:60ch}
+.hero{padding:34px 0 26px;border-bottom:1px solid var(--line);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;background-position:-1px -1px;-webkit-mask-image:linear-gradient(#000 40%,transparent);mask-image:linear-gradient(#000 40%,transparent);display:none}
+.intro{padding:28px 0 8px}
+.intro h1{font-size:clamp(2.4rem,9vw,5.2rem);letter-spacing:-.02em;margin:0 0 .2em}
+.rows{margin-top:26px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:14px 1fr auto;gap:8px 22px;align-items:center;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:26px 6px;text-align:left;color:var(--ink);font:inherit;cursor:pointer;transition:padding .25s,background .25s}
+.row:hover,.row:focus-visible{padding-left:22px;background:var(--panel);outline:none}
+.row i{width:14px;height:14px;background:var(--c);display:block}
+.row h2{font-size:clamp(1.7rem,6vw,2.8rem);margin:0;color:var(--c)}
+.row p{grid-column:2;color:var(--mute);margin:0;max-width:62ch}
+.row span{grid-column:3;grid-row:1;font-weight:700;color:var(--c)}
+.back{background:none;border:1px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit;margin-bottom:14px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.bar button{background:var(--c);color:#111;border:0;padding:8px 16px;border-radius:8px;font:inherit;font-weight:700;cursor:pointer}
+#msg{color:var(--acc);font-weight:700;flex:1;min-width:200px}
+#net{position:relative;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:18px;overflow:hidden}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px 18px}
+.dev{border:2px solid var(--ok);border-radius:10px;padding:10px 6px;text-align:center;transition:.4s;background:rgba(79,209,165,.07)}
+.dev .pc{width:36px;height:24px;border:3px solid var(--ok);border-radius:4px;margin:0 auto 12px;display:block;position:relative;transition:.4s}.dev .pc:after{content:"";position:absolute;left:8px;right:8px;bottom:-9px;height:3px;background:var(--ok);transition:.4s}.dev.inf .pc{border-color:var(--bad)}.dev.inf .pc:after{background:var(--bad)}
+.dev b{display:block;font-size:.9rem}
+.dev code{display:block;font-size:.78rem;color:var(--mute);word-break:break-all}
+.dev small{display:block;color:var(--ok);font-size:.75rem}
+.dev.inf{border-color:var(--bad);background:rgba(255,92,92,.14);animation:pulse 1.2s infinite}
+.dev.inf small{color:var(--bad)}
+@keyframes pulse{50%{box-shadow:0 0 18px var(--bad)}}
+.dot{position:absolute;z-index:5;width:18px;height:18px;border-radius:50%;background:var(--c);transform:translate(-50%,-50%);transition:left 1s ease-in-out,top 1s ease-in-out;filter:drop-shadow(0 0 8px var(--bad));pointer-events:none}
+.dot.worm{width:30px;height:12px;border-radius:8px}.dot.trojan{border-radius:3px;transform:translate(-50%,-50%) rotate(45deg)}
+#ips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;padding:0;list-style:none}
+#ips li{background:var(--panel);border:1px solid var(--bad);border-radius:20px;padding:4px 12px;font-size:.85rem}
+h3.t{margin-top:22px}
+.info{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:22px}
+.box{background:var(--panel);border-left:5px solid var(--c);border-radius:10px;padding:16px 18px}
+.box ul{margin:0;padding-left:1.1em}
+.box li{margin:.3em 0}
+footer{text-align:center;padding:16px;border-top:1px solid var(--line);color:var(--mute);font-size:.9rem;background:var(--panel)}
+footer b{color:var(--ink)}
+.note{font-size:.8rem;color:var(--mute);margin-top:14px}
+@media(max-width:700px){.info{grid-template-columns:1fr}.row{grid-template-columns:14px 1fr}.row span{grid-column:2;grid-row:auto}.row p{grid-column:2}#grid{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:reduce){.dev.inf{animation:none}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<footer>Name: <b>Moradiya Vansh</b> &nbsp;|&nbsp; Enrollment: <b>241105060085</b></footer>
+<script>
+const T={
+virus:{n:'Virus',c:'#ff5c5c',d:'Attaches itself to a clean file and spreads only when a user runs or shares that file.',
+how:'Spreads one hop at a time: an infected file is copied or opened on another device.',
+st:'Infected file opened',dot:'virus',
+causes:['Opening infected email attachments','Pirated or cracked software','Infected USB drives','Downloading files from untrusted sites'],
+threats:['Corrupts or deletes files','Slows down the system','Infects other programs (.exe, macros)','Can damage boot sector'],
+harms:['Data loss and corrupted documents','System crashes and downtime','Cost of recovery and repair'],
+fix:['Run a full scan with updated antivirus','Boot into safe mode and quarantine infected files','Restore clean files from backup','Reinstall the OS if the boot sector is damaged'],
+sec:['Install antivirus and keep it updated','Never open unknown attachments','Scan USB drives before use','Disable macros by default','Keep regular offline backups']},
+worm:{n:'Worm',c:'#ffb703',d:'A standalone program that copies itself over the network by itself, with no user action needed.',
+how:'Spreads in waves: every infected device sends copies to several others at the same time.',
+st:'Self-replicated over network',dot:'worm',
+causes:['Unpatched OS or software vulnerabilities','Open network ports and weak firewalls','Email and chat auto-propagation','Weak or default passwords on shared services'],
+threats:['Consumes bandwidth and CPU','Creates backdoors for attackers','Delivers other malware (payloads)','Can launch DDoS attacks'],
+harms:['Entire network slowdown or outage','Servers becoming unreachable','Large scale business disruption'],
+fix:['Disconnect infected devices from the network','Apply security patches immediately','Run a full malware scan and remove the worm','Reset passwords and review network logs'],
+sec:['Keep OS and apps patched','Use a firewall and close unused ports','Segment the network (VLANs)','Use an IDS/IPS to detect unusual traffic','Use strong, unique passwords']},
+trojan:{n:'Trojan',c:'#9b8cff',d:'Malware disguised as useful software. It does not self-replicate but opens a backdoor once installed.',
+how:'The user is tricked into installing a fake app; it then opens a backdoor and the fake installer gets shared onward.',
+st:'Backdoor open',dot:'trojan',
+causes:['Fake software, games or cracked apps','Phishing emails with fake invoices','Malicious ads and fake update pop-ups','Social engineering'],
+threats:['Steals passwords and banking data','Installs a remote access backdoor (RAT)','Keylogging and spying via webcam','Downloads more malware'],
+harms:['Identity theft and financial loss','Privacy breach and data leaks','Device taken over by attackers'],
+fix:['Disconnect from the internet','Scan with a trusted antimalware tool','Uninstall the fake program','Change all passwords from a clean device'],
+sec:['Download only from official stores','Verify email senders and links','Do not run unknown installers','Keep antimalware active','Use two-factor authentication']}};
+const N=8,IPS=Array.from({length:N},(_,i)=>'192.168.1.'+(10+i*7));
+let run=0;const app=document.getElementById('app');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function home(){run++;app.style.setProperty('--c','#fff');
+app.innerHTML=`<div class="intro"><h1>Malware Spread Lab</h1><p class="sub">An educational simulation. Choose a threat to watch how it travels from one computer to the next, then learn how to defend against it.</p></div><div class="rows">`+
+Object.keys(T).map(k=>`<button class="row" style="--c:${T[k].c}" onclick="open_('${k}')"><i></i><h2>${T[k].n}</h2><span>Open simulation</span><p>${T[k].d}</p></button>`).join('')+`</div>`;scrollTo(0,0)}
+function list(a){return'<ul>'+a.map(x=>`<li>${x}</li>`).join('')+'</ul>'}
+function open_(k){const t=T[k];run++;app.style.setProperty('--c',t.c);
+app.innerHTML=`<button class="back" onclick="home()">← All threats</button><h1 style="color:${t.c}">${t.n}</h1><p class="sub">${t.d}</p>
+<div class="bar"><span id="msg"></span><button onclick="open_('${k}')">Restart</button></div>
+<div id="net"><div id="grid">`+IPS.map((ip,i)=>`<div class="dev" id="d${i}"><span class="pc"></span><b>PC-${i+1}</b><small>Clean</small><code>${ip}</code></div>`).join('')+`</div></div>
+<h3 class="t">Infected device IPs</h3><ul id="ips"></ul><p class="note">${t.how} The simulation loops continuously.</p>
+<div class="info"><div class="box"><h3>Causes</h3>${list(t.causes)}</div><div class="box"><h3>Threats</h3>${list(t.threats)}</div><div class="box"><h3>Harms</h3>${list(t.harms)}</div><div class="box"><h3>Solution</h3>${list(t.fix)}</div></div>
+<div class="box" style="margin-top:16px"><h3>Security: how to protect systems</h3>${list(t.sec)}</div>`;
+scrollTo(0,0);sim(k)}
+function hop(a,b,ic){return new Promise(res=>{const net=document.getElementById('net'),A=document.getElementById('d'+a),B=document.getElementById('d'+b),g=document.getElementById('grid');
+const pos=e=>[g.offsetLeft+e.offsetLeft+e.offsetWidth/2,g.offsetTop+e.offsetTop+e.offsetHeight/2];
+const d=document.createElement('div');d.className='dot '+ic;const p=pos(A),q=pos(B);d.style.left=p[0]+'px';d.style.top=p[1]+'px';net.appendChild(d);void d.offsetWidth;d.style.left=q[0]+'px';d.style.top=q[1]+'px';
+setTimeout(()=>{d.remove();res()},1050)})}
+function infect(i,t,n){const e=document.getElementById('d'+i);if(!e)return;e.classList.add('inf');e.querySelector('small').textContent=t.st;
+const li=document.createElement('li');li.textContent=`#${n} ${IPS[i]} (PC-${i+1})`;document.getElementById('ips').appendChild(li)}
+async function sim(k){const id=++run,t=T[k],m=()=>document.getElementById('msg');
+while(id===run){document.querySelectorAll('.dev').forEach(e=>{e.classList.remove('inf');e.querySelector('small').textContent='Clean'});document.getElementById('ips').innerHTML='';
+const inf=[],rnd=a=>a[Math.floor(Math.random()*a.length)];let n=1;
+const s=Math.floor(Math.random()*N);inf.push(s);infect(s,t,n++);m().textContent=`Patient zero: ${IPS[s]}`;await sleep(1500);
+while(inf.length<N&&id===run){const clean=[...Array(N).keys()].filter(i=>!inf.includes(i));
+if(k==='worm'){const jobs=[];const pool=[...clean];inf.slice().forEach(a=>{for(let j=0;j<2&&pool.length;j++){const b=pool.splice(Math.floor(Math.random()*pool.length),1)[0];jobs.push([a,b])}});
+m().textContent=`Worm copies itself from ${new Set(jobs.map(j=>j[0])).size} device(s) at once...`;
+await Promise.all(jobs.map(j=>hop(j[0],j[1],t.dot)));if(id!==run)return;jobs.forEach(j=>{inf.push(j[1]);infect(j[1],t,n++)})}
+else{const a=rnd(inf),b=rnd(clean);m().textContent=k==='virus'?`User on ${IPS[b]} receives an infected file from ${IPS[a]}`:`User on ${IPS[b]} installs a fake app shared from ${IPS[a]}`;
+await hop(a,b,t.dot);if(id!==run)return;inf.push(b);infect(b,t,n++);await sleep(700)}
+await sleep(500)}
+if(id!==run)return;m().textContent='All devices infected. Restarting simulation...';await sleep(3500)}}
+home();
+</script>
+</body>
+</html>
